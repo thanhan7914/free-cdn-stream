@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Upload → HLS AES-128 Player</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        margin: 2rem;
+      }
+
+      iframe {
+        border: none;
+        width: 720px;
+        height: 405px;
+        margin-top: 2rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Upload video and convert to HLS (AES-128)</h1>
+    <form
+      id="uploadForm"
+      action="/upload"
+      method="post"
+      enctype="multipart/form-data"
+    >
+      <label
+        >Video file:
+        <input type="file" name="video" accept="video/*" required /> </label
+      ><br /><br />
+      <label
+        >Segment duration (sec):
+        <input type="number" name="seg" value="10" min="2" max="10" /></label
+      ><br /><br />
+      <button type="submit">Upload & Convert</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
+    <script>
+      const form = document.getElementById("uploadForm");
+      const result = document.getElementById("result");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const data = new FormData(form);
+        result.innerHTML = "<p>Processing, please wait...</p>";
+
+        const res = await fetch("/upload", { method: "POST", body: data });
+        const html = await res.text();
+        result.innerHTML = html;
+      });
+
+      function showPlayer(url) {
+        const match = url.match(/(\/)?hls\/([^/]+)\//);
+        const key = match ? match[2] : null;
+        const div = document.createElement("div");
+        div.className = "player";
+        div.innerHTML = `<iframe src="/player.html?key=${key}" />`;
+        result.appendChild(div);
+      }
+
+      showPlayer("/hls/demo/master.m3u8");
+    </script>
+  </body>
+</html>
